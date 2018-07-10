@@ -1,4 +1,6 @@
 module.exports = {
+    /** @param {Creep} creep
+        @param {int} minimumEnergy **/
 	pickUpNearSource: function(creep, minimumEnergy = 10) {
         var nearSource = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES,{
             filter: (energy) => {return (energy.amount > minimumEnergy && energy.resourceType == RESOURCE_ENERGY)}

@@ -1,8 +1,10 @@
 module.exports = {
+	/** @param {Spawn} Spawn
+        @param {String} role **/
 	createNewCreep: function(spawner, role) {
 		const parts = [];
 		let minimumParts = 2; //The minimum parts that one creep can be created with	
-
+		let target = undefined;
 		//Get the energy avaiable from near extensions that have energy
 		let energyAvaiable = spawner.room.find(FIND_STRUCTURES, {
 			filter: (structure) => (structure.structureType == STRUCTURE_EXTENSION && structure.energy == structure.energyCapacity)
@@ -16,7 +18,7 @@ module.exports = {
 		}
 
 		const numberOfParts = [
-		/*[NamePart,PercentDedicated(Ex: 50 means 50% of energyAvaiable spended on this part),TotalParts,EnergyCostForEachPart]*/
+		/*[NamePart,PercentDedicated,TotalParts,EnergyCostForEachPart]*/
 		    [TOUGH,0,0,10],
 		    [WORK,0,0,100],
 		    [CARRY,0,0,50],
@@ -71,9 +73,30 @@ module.exports = {
   				numberOfParts[4][1] = 50; //MOVE
                 break;
             case 'claimer':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,650);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,250);
  				numberOfParts[3][1] = 92; //CLAIM
  				numberOfParts[4][1] = 8; //MOVE
+
+  				//Find the room target
+  				if (!Memory.rooms[spawner.room.name].remote){
+  					console.log("ERROR: can't spawn claimer, there is no 'remote' field on memory room");
+  					return;
+  				}
+
+				let allRoomsAreClaimed = true;
+				for(let remoteRoom in Memory.rooms[spawner.room.name].remote) {
+					let claimed = Memory.rooms[spawner.room.name].remote[remoteRoom].claimed;
+		            if(claimed == false) {
+		                allRoomsAreClaimed = false;
+		                target = remoteRoom;
+		                break;
+		            }
+		        }
+		        if (allRoomsAreClaimed){
+		        	console.log("ERROR: can't spawn claimer, there is no free remote room to spawn a claimer");
+					return;
+				}
+
                 break;
             case 'unit_assault':
             	energyAvaiable = getEnergyLimit(energyAvaiable,1450);
@@ -128,7 +151,8 @@ module.exports = {
 				role: role,
 				working: false,
 				onFlag: false,
-				roomRoot: spawner.room.name
+				roomRoot: spawner.room.name,
+				target: target
 			}
 		}));
 

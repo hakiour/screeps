@@ -55,7 +55,7 @@ module.exports.loop = function () {
 		        masterSpawner.createNewCreep(spawner, "upgrader");
 		    }else if(repairman < spawner.memory.minRepairman) {
 		        masterSpawner.createNewCreep(spawner, "repairman");
-		    }else if(claimers < spawner.memory.minClaimer ){
+		    }else if(claimers < spawner.memory.minClaimers ){
 		        masterSpawner.createNewCreep(spawner, "claimer");
 		    }else if(builders < spawner.memory.minBuilders) {
 		        masterSpawner.createNewCreep(spawner, "builder");
