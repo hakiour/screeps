@@ -18,7 +18,7 @@ require('prototype.tower');
 
 module.exports.loop = function () {
     
-    genericFunctions.clearMemoryOfDeadCreeps();
+    masterSpawner.clearMemoryOfDeadCreeps();
 
     for(let spawnerName in Game.spawns){
     	let spawner = Game.spawns[spawnerName];

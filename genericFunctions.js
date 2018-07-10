@@ -62,14 +62,6 @@ module.exports = {
             }
     },
 
-    clearMemoryOfDeadCreeps: function(){
-        for(var name in Memory.creeps) {
-            if(!Game.creeps[name]) {
-                delete Memory.creeps[name];
-            }
-        }
-    },
-
     goToBase: function(creep){
             var nearestSafeZone = getNearestSafeZone(creep);
             if(creep.room != Game.flags[nearestSafeZone].room){

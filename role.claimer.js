@@ -1,4 +1,3 @@
-var genericFunctions = require('genericFunctions');
 var roleClaimer = {
    
     /** @param {Creep} creep **/
@@ -8,6 +7,7 @@ var roleClaimer = {
             if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.controller);
 			}
+
     	}else{
     		//Move to the target room
     		var exitToTarget = creep.room.findExitTo(creep.memory.target);

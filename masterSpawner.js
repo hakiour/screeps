@@ -26,7 +26,7 @@ module.exports = {
 		    [MOVE,0,0,50],
 		    [ATTACK,0,0,80],
 		    [HEAL,0,0,250]
-		]; 
+		];		
 
 		switch(role) {
             case 'harvester':
@@ -89,6 +89,7 @@ module.exports = {
 		            if(claimed == false) {
 		                allRoomsAreClaimed = false;
 		                target = remoteRoom;
+		                Memory.rooms[spawner.room.name].remote[remoteRoom].claimed = true;
 		                break;
 		            }
 		        }
@@ -170,5 +171,21 @@ module.exports = {
             return energyLimit;
         else
         	return energyAvaiable;
-	}
+	},
+
+    clearMemoryOfDeadCreeps: function(){
+        //Clear the memory of dead creeps
+        for(var name in Memory.creeps) {
+            if(!Game.creeps[name]) {
+                //Specific actions for rols
+                switch(Memory.creeps[name].role){
+                    case "claimer":
+                    //On claimers, we set the target room as not claimed
+                    Memory.rooms[Memory.creeps[name].roomRoot].remote[Memory.creeps[name].target].claimed = false;
+                    break;
+                }
+                delete Memory.creeps[name];
+            }
+        }
+    }
 };
