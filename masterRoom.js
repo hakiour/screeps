@@ -140,11 +140,7 @@ module.exports = {
 	        	return energyAvaiable;
 		}
 	},
-	setStructureHits: function(room){
-		//If we have more energy than the limit, set the energy avaiable as the limit.
-		if (energyAvaiable > energyLimit)
-            return energyLimit;
-        else
-        	return energyAvaiable;
+	setMaxStructureHits: function(room, maxStructureHits){
+		room.memory.maxStructureHits = maxStructureHits;
 	}
 };

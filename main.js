@@ -19,7 +19,7 @@ require('prototype.tower');
 module.exports.loop = function () {
     
     genericFunctions.clearMemoryOfDeadCreeps();
-    
+
     for(let spawnerName in Game.spawns){
     	let spawner = Game.spawns[spawnerName];
     	let countByRole = _.countBy(spawner.room.find(FIND_MY_CREEPS), 'memory.role');
@@ -91,30 +91,8 @@ module.exports.loop = function () {
     var towers = _.filter(Game.structures, Tower => Tower.structureType == STRUCTURE_TOWER);
     //For each tower
     for (let tower of towers) {
-        // Find closest hostile creep
-        var target = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);	
-        if (target) {
-            tower.attack(target);
-        }else{
-        	//Heal near creeps
-        	target = tower.pos.findClosestByRange(FIND_MY_CREEPS, {
-            filter: (thisCreep) => (thisCreep.hits < thisCreep.hitsMax)
-            });
-            
-            if(target){
-            	console.log(tower.heal(target));
-            }
-        	//Repair near structures
-        	/*if (tower.energy > 600){
-        		target = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => (((structure.hits < structure.hitsMax/2) && structure.structureType != STRUCTURE_WALL && structure.structureType != STRUCTURE_RAMPART) || (structure.hits < 10000 && (structure.hits + 1000) < structure.hitsMax))
-            // && (structure.structureType == STRUCTURE_RAMPART || structure.structureType == STRUCTURE_WALL)
-            });
-            
-            if(target){
-            	console.log(tower.repair(target));
-            }
-        	}*/
+        if (!tower.attackNearEnemys()) {
+            tower.supportNearAllys();
         }
     }
 
