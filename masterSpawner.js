@@ -6,6 +6,7 @@ module.exports = {
 		let minimumParts = 2; //The minimum parts that one creep can be created with	
 		let target = undefined;
 		let energySource = undefined;
+		let memoryRemoteRooms;
 		//Get the energy avaiable from near extensions that have energy
 		let energyAvaiable = spawner.room.find(FIND_STRUCTURES, {
 			filter: (structure) => (structure.structureType == STRUCTURE_EXTENSION && structure.energy == structure.energyCapacity)
@@ -68,19 +69,19 @@ module.exports = {
  				numberOfParts[4][1] = 40; //MOVE
 
   				//Find the room target
-  				let memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
+  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
   				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
   					return;
   				}
   				//Find a free energy source and save it in memory
 				let allEnergiesAreTaken = true;
 				for(let remoteRoom in memoryRemoteRooms) {
-					for (var i = memoryRemoteRooms[remoteRoom].energies.length - 1; i >= 0; i--) {
-						if (memoryRemoteRooms[remoteRoom].energies[i] !== false){
+					for (let energy in memoryRemoteRooms[remoteRoom].energies){
+						if (memoryRemoteRooms[remoteRoom].energies[energy].mining == false){
 							allEnergiesAreTaken = false;
 							target = remoteRoom;
-							energySource = memoryRemoteRooms[remoteRoom].energies[i];
-							memoryRemoteRooms[remoteRoom].energies[i] = false;
+							energySource = energy;
+							memoryRemoteRooms[remoteRoom].energies[energy].mining = true;
 							break;
 						}
 					}
@@ -209,25 +210,17 @@ module.exports = {
         //Clear the memory of dead creeps
         for(var name in Memory.creeps) {
             if(!Game.creeps[name]) {
-                //Specific actions for rols
+            	let creepMemory = Memory.creeps[name];
+                //Specific actions depending on the creep rol
                 switch(Memory.creeps[name].role){
                     case "claimer":
 	                    //On claimers, we set the target room as not claimed
-	                    Memory.rooms[Memory.creeps[name].roomRoot].remote[Memory.creeps[name].target].claimed = false;
-                    break;
+	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].claimed = false;
+                   		break;
                     case "miner":
 	                    //On miners, free the energy
-	                    let memoryRemoteRooms = Memory.rooms[Memory.creeps[name].roomRoot].remote;
-						for(let remoteRoom in memoryRemoteRooms) {
-							console.log(remoteRoom);
-							for (var i = memoryRemoteRooms[remoteRoom].energies.length - 1; i >= 0; i--) {
-								if (memoryRemoteRooms[remoteRoom].energies[i] == false){
-									memoryRemoteRooms[remoteRoom].energies[i] = Memory.creeps[name].energySource;							
-									break;
-								}
-							}
-				        }
-						break;		
+	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].mining = false;
+	                    break;
                 }
                 delete Memory.creeps[name];
             }
