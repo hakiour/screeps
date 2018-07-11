@@ -1,4 +1,3 @@
-var genericFunctions = require('genericFunctions');
 var roleMiner = {
    
     /** @param {Creep} creep **/
@@ -11,7 +10,7 @@ var roleMiner = {
             }
         }else{
             //Move to the target room
-            let exitToTarget = creep.room.findExitTo(creep.pos.findClosestByRange(creep.memory.target));
+            let exitToTarget = creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.target));
             creep.moveTo(exitToTarget);
         }
 	}

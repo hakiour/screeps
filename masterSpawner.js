@@ -87,7 +87,7 @@ module.exports = {
 					}
 		        }
 		        
-		        if (!checkInvalidValue(allEnergiesAreTaken,role,"there is no remote room with free energy.")){
+		        if (!checkInvalidValue(!allEnergiesAreTaken,role,"there is no remote room with free energy.")){
 					return;
 				}
 
@@ -97,6 +97,31 @@ module.exports = {
            		numberOfParts[1][1] = 0.1; //WORK
            		numberOfParts[2][1] = 50; //CARRY
   				numberOfParts[4][1] = 50; //MOVE
+
+
+  				//Find the room target
+  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
+  				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
+  					return;
+  				}
+  				//Find a room with free slots for transporters
+				let allEnergiesSlotsAreTaken = true;
+				for(let remoteRoom in memoryRemoteRooms) {
+					for (let energy in memoryRemoteRooms[remoteRoom].energies){
+						let thisEnergy = memoryRemoteRooms[remoteRoom].energies[energy];
+						if (thisEnergy.maxTransporters > thisEnergy.transporters){
+							allEnergiesSlotsAreTaken = false;
+							thisEnergy.transporters += 1;
+							target = remoteRoom;
+							break;
+						}
+					}
+		        }
+		        
+		        if (checkInvalidValue(!allEnergiesSlotsAreTaken,role,"there is no remote room with free slots.")){
+					return;
+				}
+
                 break;
             case 'claimer':
             	energyAvaiable = getEnergyLimit(energyAvaiable,650);
@@ -220,6 +245,10 @@ module.exports = {
                     case "miner":
 	                    //On miners, free the energy
 	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].mining = false;
+	                    break;
+	                case "transporter":
+	                    //minus this transporter form the total of their energySource
+	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].transporters -= 1;
 	                    break;
                 }
                 delete Memory.creeps[name];
