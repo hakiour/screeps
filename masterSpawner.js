@@ -5,6 +5,7 @@ module.exports = {
 		const parts = [];
 		let minimumParts = 2; //The minimum parts that one creep can be created with	
 		let target = undefined;
+		let energySource = undefined;
 		//Get the energy avaiable from near extensions that have energy
 		let energyAvaiable = spawner.room.find(FIND_STRUCTURES, {
 			filter: (structure) => (structure.structureType == STRUCTURE_EXTENSION && structure.energy == structure.energyCapacity)
@@ -61,10 +62,34 @@ module.exports = {
  				numberOfParts[4][1] = 15; //MOVE
                 break;
             case 'miner':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,1000);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,500);
             	minimumParts = 6;
  				numberOfParts[1][1] = 60; //WORK
  				numberOfParts[4][1] = 40; //MOVE
+
+  				//Find the room target
+  				let memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
+  				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
+  					return;
+  				}
+  				//Find a free energy source and save it in memory
+				let allEnergiesAreTaken = true;
+				for(let remoteRoom in memoryRemoteRooms) {
+					for (var i = memoryRemoteRooms[remoteRoom].energies.length - 1; i >= 0; i--) {
+						if (memoryRemoteRooms[remoteRoom].energies[i] !== false){
+							allEnergiesAreTaken = false;
+							target = remoteRoom;
+							energySource = memoryRemoteRooms[remoteRoom].energies[i];
+							memoryRemoteRooms[remoteRoom].energies[i] = false;
+							break;
+						}
+					}
+		        }
+		        
+		        if (!checkInvalidValue(allEnergiesAreTaken,role,"there is no remote room with free energy.")){
+					return;
+				}
+
                 break;
             case 'transporter':
             	energyAvaiable = getEnergyLimit(energyAvaiable,700);
@@ -73,28 +98,26 @@ module.exports = {
   				numberOfParts[4][1] = 50; //MOVE
                 break;
             case 'claimer':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,250);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,650);
  				numberOfParts[3][1] = 92; //CLAIM
  				numberOfParts[4][1] = 8; //MOVE
 
   				//Find the room target
-  				if (!Memory.rooms[spawner.room.name].remote){
-  					console.log("ERROR: can't spawn claimer, there is no 'remote' field on memory room");
+  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;
+				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
   					return;
   				}
 
 				let allRoomsAreClaimed = true;
-				for(let remoteRoom in Memory.rooms[spawner.room.name].remote) {
-					let claimed = Memory.rooms[spawner.room.name].remote[remoteRoom].claimed;
-		            if(claimed == false) {
+				for(let remoteRoom in memoryRemoteRooms) {
+		            if(memoryRemoteRooms[remoteRoom].claimed == false) {
 		                allRoomsAreClaimed = false;
 		                target = remoteRoom;
-		                Memory.rooms[spawner.room.name].remote[remoteRoom].claimed = true;
+		                memoryRemoteRooms[remoteRoom].claimed = true;
 		                break;
 		            }
 		        }
-		        if (allRoomsAreClaimed){
-		        	console.log("ERROR: can't spawn claimer, there is no free remote room to spawn a claimer");
+		        if (!checkInvalidValue(allRoomsAreClaimed,role,"there is no free remote room to spawn a claimer.")){
 					return;
 				}
 
@@ -153,7 +176,8 @@ module.exports = {
 				working: false,
 				onFlag: false,
 				roomRoot: spawner.room.name,
-				target: target
+				target: target,
+				energySource: energySource
 			}
 		}));
 
@@ -163,6 +187,14 @@ module.exports = {
 	            return energyLimit;
 	        else
 	        	return energyAvaiable;
+		}
+
+		function checkInvalidValue(booleanVar, role, errorMessage){
+			if (booleanVar == false){
+  					console.log("ERROR: can't spawn " + role + ", "+ errorMessage);
+  					return true;
+  			}
+			return false;
 		}
 	},
 	setStructureHits: function(room){
@@ -180,9 +212,22 @@ module.exports = {
                 //Specific actions for rols
                 switch(Memory.creeps[name].role){
                     case "claimer":
-                    //On claimers, we set the target room as not claimed
-                    Memory.rooms[Memory.creeps[name].roomRoot].remote[Memory.creeps[name].target].claimed = false;
+	                    //On claimers, we set the target room as not claimed
+	                    Memory.rooms[Memory.creeps[name].roomRoot].remote[Memory.creeps[name].target].claimed = false;
                     break;
+                    case "miner":
+	                    //On miners, free the energy
+	                    let memoryRemoteRooms = Memory.rooms[Memory.creeps[name].roomRoot].remote;
+						for(let remoteRoom in memoryRemoteRooms) {
+							console.log(remoteRoom);
+							for (var i = memoryRemoteRooms[remoteRoom].energies.length - 1; i >= 0; i--) {
+								if (memoryRemoteRooms[remoteRoom].energies[i] == false){
+									memoryRemoteRooms[remoteRoom].energies[i] = Memory.creeps[name].energySource;							
+									break;
+								}
+							}
+				        }
+						break;		
                 }
                 delete Memory.creeps[name];
             }
