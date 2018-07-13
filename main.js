@@ -17,7 +17,8 @@ require('prototype.tower');
 
 
 module.exports.loop = function () {
-    
+    const creepsLog = false;
+
     masterSpawner.clearMemoryOfDeadCreeps();
 
     for(let spawnerName in Game.spawns){
@@ -71,12 +72,14 @@ module.exports.loop = function () {
 		}
 
 		//Room information
+        if (creepsLog){
 	  	console.log("SPAWNER: " + spawnerName);
 	    console.log('Harvesters: ' + harvesters + ' Builders: ' + builders + ' Upgraders: ' + upgraders  + ' Farmers: ' + farmers + ' Repairman: ' + repairman + ' Miners: ' + miners+ ' Transporter: ' + transporters + ' Claimers: ' + claimers);
 	    console.log('ARMY -- ASSAULT: ' + assault + ' HEALERS: ' + healers);
 	    console.log('TESTER: ' + testers);
 	    console.log("-------------------------");
-
+        }
+        
 	    //Draw a message with the crep role
 	    if(spawner.spawning) { 
 	        spawner.room.visual.text(

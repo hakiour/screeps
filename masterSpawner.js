@@ -2,7 +2,7 @@ module.exports = {
 	/** @param {Spawn} Spawn
         @param {String} role **/
 	createNewCreep: function(spawner, role) {
-		const parts = [];
+		let parts = [];
 		let minimumParts = 2; //The minimum parts that one creep can be created with	
 		let target = undefined;
 		let energySource = undefined;
@@ -63,89 +63,21 @@ module.exports = {
  				numberOfParts[4][1] = 15; //MOVE
                 break;
             case 'miner':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,500);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,700);
             	minimumParts = 6;
- 				numberOfParts[1][1] = 60; //WORK
- 				numberOfParts[4][1] = 40; //MOVE
-
-  				//Find the room target
-  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
-  				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
-  					return;
-  				}
-  				//Find a free energy source and save it in memory
-				let allEnergiesAreTaken = true;
-				for(let remoteRoom in memoryRemoteRooms) {
-					for (let energy in memoryRemoteRooms[remoteRoom].energies){
-						if (memoryRemoteRooms[remoteRoom].energies[energy].mining == false){
-							allEnergiesAreTaken = false;
-							target = remoteRoom;
-							energySource = energy;
-							memoryRemoteRooms[remoteRoom].energies[energy].mining = true;
-							break;
-						}
-					}
-		        }
-		        
-		        if (!checkInvalidValue(!allEnergiesAreTaken,role,"there is no remote room with free energy.")){
-					return;
-				}
-
+ 				numberOfParts[1][1] = 75; //WORK
+ 				numberOfParts[4][1] = 25; //MOVE
                 break;
             case 'transporter':
             	energyAvaiable = getEnergyLimit(energyAvaiable,700);
            		numberOfParts[1][1] = 0.1; //WORK
            		numberOfParts[2][1] = 50; //CARRY
   				numberOfParts[4][1] = 50; //MOVE
-
-
-  				//Find the room target
-  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;				
-  				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
-  					return;
-  				}
-  				//Find a room with free slots for transporters
-				let allEnergiesSlotsAreTaken = true;
-				for(let remoteRoom in memoryRemoteRooms) {
-					for (let energy in memoryRemoteRooms[remoteRoom].energies){
-						let thisEnergy = memoryRemoteRooms[remoteRoom].energies[energy];
-						if (thisEnergy.maxTransporters > thisEnergy.transporters){
-							allEnergiesSlotsAreTaken = false;
-							thisEnergy.transporters += 1;
-							target = remoteRoom;
-							break;
-						}
-					}
-		        }
-		        
-		        if (checkInvalidValue(!allEnergiesSlotsAreTaken,role,"there is no remote room with free slots.")){
-					return;
-				}
-
                 break;
             case 'claimer':
             	energyAvaiable = getEnergyLimit(energyAvaiable,650);
  				numberOfParts[3][1] = 92; //CLAIM
- 				numberOfParts[4][1] = 8; //MOVE
-
-  				//Find the room target
-  				memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;
-				if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
-  					return;
-  				}
-
-				let allRoomsAreClaimed = true;
-				for(let remoteRoom in memoryRemoteRooms) {
-		            if(memoryRemoteRooms[remoteRoom].claimed == false) {
-		                allRoomsAreClaimed = false;
-		                target = remoteRoom;
-		                memoryRemoteRooms[remoteRoom].claimed = true;
-		                break;
-		            }
-		        }
-		        if (!checkInvalidValue(allRoomsAreClaimed,role,"there is no free remote room to spawn a claimer.")){
-					return;
-				}
+				numberOfParts[4][1] = 8; //MOVE
 
                 break;
             case 'unit_assault':
@@ -174,27 +106,86 @@ module.exports = {
             	break;
 	    }
 
-		//We calculate how much parts we can do by rule of three (rounding to floor with ~~)
-		for (let i = numberOfParts.length - 1; i >= 0; i--) {
-			if(numberOfParts[i][1] == 0){ //Delete the parts that don't have %
-				numberOfParts.splice(i,1);
-				continue;
-			}
-			numberOfParts[i][2] = ~~((energyAvaiable*numberOfParts[i][1]/100)/numberOfParts[i][3]);
-			if (numberOfParts[i][2] == 0){ //Minimum one item of each part, we have a backup storage that can afford this
-				numberOfParts[i][2] = 1;
-			}
-		}
-		//Add the parts to the body: EX: [WORK,WORK] + [CARRY,CARRY] = [WORK,WORK,CARRY,CARRY]
-		numberOfParts.forEach(function(dataParts) {
-			for (let i = dataParts[2]; i > 0; i--) {
-				parts.push(dataParts[0]);
-			}
-		});
+	    parts = getNumberOfParts(numberOfParts);
 		if (minimumParts > parts.length){
 			console.log("INSUFFICIENT ENERGY FOR CREATE A " + role + ", MINIMUM PARTS CAN'T BE DONE");
 			return;
 			}
+
+		//Their are rols that need some extra configuration
+		switch(role){
+			case "claimer":
+				//Find the room target
+  				memoryRemoteRooms = getRemoteRooms(spawner,role);
+  				if(memoryRemoteRooms == false)
+  					return;
+
+  				//find an unclaimed room
+				let allRoomsAreClaimed = true;
+				for(let remoteRoom in memoryRemoteRooms) {
+		            if(memoryRemoteRooms[remoteRoom].claimed == false) {
+		                allRoomsAreClaimed = false;
+		                target = remoteRoom;
+		                memoryRemoteRooms[remoteRoom].claimed = true;
+		                break;
+		            }
+		        }
+		        if (checkInvalidValue(!allRoomsAreClaimed,role,"there is no free remote room to spawn a claimer.")){
+					return;
+				}
+				break;
+			case "miner":
+  				//Find the room target
+  				memoryRemoteRooms = getRemoteRooms(spawner,role);
+  				if(memoryRemoteRooms == false)
+  					return;
+
+  				//Find a free energy source and save it in memory
+				let allEnergiesAreTaken = true;
+				for(let remoteRoom in memoryRemoteRooms) {
+					for (let energy in memoryRemoteRooms[remoteRoom].energies){
+						if (memoryRemoteRooms[remoteRoom].energies[energy].mining == false){
+							allEnergiesAreTaken = false;
+							target = remoteRoom;
+							energySource = energy;
+							memoryRemoteRooms[remoteRoom].energies[energy].mining = true;
+							break;
+						}
+					}
+		        }
+		        
+		        if (checkInvalidValue(!allEnergiesAreTaken,role,"there is no remote room with free energy.")){
+					return;
+				}
+				break;
+			case "transporter":
+				//Find the room target
+  				memoryRemoteRooms = getRemoteRooms(spawner,role);
+  				if(memoryRemoteRooms == false)
+  					return;
+
+  				//Find a room with free slots for transporters
+				let allEnergiesSlotsAreTaken = true;
+				for(let remoteRoom in memoryRemoteRooms) {
+					for (let energy in memoryRemoteRooms[remoteRoom].energies){
+						let thisEnergy = memoryRemoteRooms[remoteRoom].energies[energy];
+						if (thisEnergy.maxTransporters > thisEnergy.transporters){
+							allEnergiesSlotsAreTaken = false;
+							thisEnergy.transporters += 1;
+							energySource = energy;
+							target = remoteRoom;
+							break;
+						}
+					}
+		        }
+		        
+		        if (checkInvalidValue(!allEnergiesSlotsAreTaken,role,"there is no remote room with free slots.")){
+					return;
+				}
+				break;
+		}
+
+
 		console.log("SPAWNING: " + role + " with: " + parts + " parts.");
 		console.log("Spawner result error code: " + spawner.spawnCreep(parts, role + "-" + Game.time, {
 			memory: {
@@ -222,6 +213,36 @@ module.exports = {
   			}
 			return false;
 		}
+
+		function getNumberOfParts(numberOfParts){
+			let parts = [];
+			//We calculate how much parts we can do by rule of three (rounding to floor with ~~)
+			for (let i = numberOfParts.length - 1; i >= 0; i--) {
+				if(numberOfParts[i][1] == 0){ //Delete the parts that don't have %
+					numberOfParts.splice(i,1);
+					continue;
+				}
+				numberOfParts[i][2] = ~~((energyAvaiable*numberOfParts[i][1]/100)/numberOfParts[i][3]);
+				if (numberOfParts[i][2] == 0){ //Minimum one item of each part, we have a backup storage that can afford this
+					numberOfParts[i][2] = 1;
+				}
+			}
+			//Add the parts to the body: EX: [WORK,WORK] + [CARRY,CARRY] = [WORK,WORK,CARRY,CARRY]
+			numberOfParts.forEach(function(dataParts) {
+				for (let i = dataParts[2]; i > 0; i--) {
+					parts.push(dataParts[0]);
+				}
+			});
+			return parts;
+		}
+
+		function getRemoteRooms(spawner,role){
+			let memoryRemoteRooms = Memory.rooms[spawner.room.name].remote;
+			if (checkInvalidValue(memoryRemoteRooms, role,"there is no 'remote' field on memory room")){
+  				return false;
+  			}
+  			return memoryRemoteRooms;
+		}
 	},
 	setStructureHits: function(room){
 		//If we have more energy than the limit, set the energy avaiable as the limit.
@@ -237,7 +258,7 @@ module.exports = {
             if(!Game.creeps[name]) {
             	let creepMemory = Memory.creeps[name];
                 //Specific actions depending on the creep rol
-                switch(Memory.creeps[name].role){
+				switch(Memory.creeps[name].role){
                     case "claimer":
 	                    //On claimers, we set the target room as not claimed
 	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].claimed = false;
@@ -249,9 +270,10 @@ module.exports = {
 	                case "transporter":
 	                    //minus this transporter form the total of their energySource
 	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].transporters -= 1;
-	                    break;
-                }
-                delete Memory.creeps[name];
+                    	break;
+            	}
+                delete Memory.creeps[name];            
+
             }
         }
     }

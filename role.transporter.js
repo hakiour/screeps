@@ -4,7 +4,7 @@ var roleTransporter = {
    
     /** @param {Creep} creep **/
     run: function(creep) {
-        //Pick up energy
+        //If we aren't full
         if(creep.carry.energy < creep.carryCapacity){
             //Collect energy in the targer room
            if(creep.memory.target == creep.room.name){
