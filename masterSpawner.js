@@ -244,14 +244,6 @@ module.exports = {
   			return memoryRemoteRooms;
 		}
 	},
-	setStructureHits: function(room){
-		//If we have more energy than the limit, set the energy avaiable as the limit.
-		if (energyAvaiable > energyLimit)
-            return energyLimit;
-        else
-        	return energyAvaiable;
-	},
-
     clearMemoryOfDeadCreeps: function(){
         //Clear the memory of dead creeps
         for(var name in Memory.creeps) {
@@ -276,5 +268,51 @@ module.exports = {
 
             }
         }
+    },
+	/** @param {String} Spawn name
+    	@param {int} Stage **/
+    createSpawnMemory: function(spawnerName, stage = 0){
+    	if(!Game.spawns[spawnerName]){
+			console.log(spawnerName + " doesn't exists");    		
+			return;
+    	}
+
+    	let spawner = Game.spawns[spawnerName];
+		let minUnitAssault = 0;
+		let minUnitHealer  = 0;
+		let minFarmers = 0;
+		let minHarvesters = 0;
+		let minUpgraders = 0;
+		let minRepairman = 0;
+		let minClaimers  = 0;
+		let minBuilders = 0;
+		let minTesters = 0;
+		let minRemoteWorkers = 0;
+		let minMiners = 0;
+		let minTransporters = 0;   
+
+		switch(stage){
+			case 2:
+				minRepairman = 1;
+			case 1:
+				minFarmers = 2;
+				minUpgraders = 1;
+				minHarvesters = 4;
+				break;
+		}
+
+		spawner.memory.minUnitAssault = minUnitAssault;
+		spawner.memory.minUnitHealer  = minUnitHealer;
+		spawner.memory.minFarmers = minFarmers;
+	    spawner.memory.minHarvesters = minHarvesters;
+	    spawner.memory.minUpgraders = minUpgraders;
+	    spawner.memory.minRepairman = minRepairman;
+	    spawner.memory.minClaimers  = minClaimers;
+	    spawner.memory.minBuilders = minBuilders;
+	    spawner.memory.minTesters = minTesters;
+	    spawner.memory.minRemoteWorkers = minRemoteWorkers;
+	    spawner.memory.minMiners = minMiners;
+	    spawner.memory.minTransporters = minTransporters;       
+    	console.log("Setting " + spawnerName + " memory to stage " + stage);
     }
 };
