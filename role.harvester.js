@@ -65,8 +65,17 @@ var roleHarvester = {
                 if(creep.carry.energy < creep.carryCapacity){
                     genericFunctions.pickUpNearSource(creep);
                 }else{
-                    if(creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                                                     
+                    if(creep.room.storage && creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(creep.room.storage);
+                    }else{
+                        //We don't have any storage, we move the creep to the spawner
+                        let spawner = creep.room.find(FIND_STRUCTURES, {
+                            filter: (structure) => {
+                                return structure.structureType == STRUCTURE_SPAWN;
+                            }
+                        });
+                        console.log(creep.moveTo(spawner[0]));
                     }                 
                 }      
             }

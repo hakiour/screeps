@@ -1,11 +1,11 @@
 var genericFunctions = require('genericFunctions');
-var roleUpgrader = require('role.upgrader');
+var roleBuilder = require('role.builder');
 var roleRepairman = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
         //Seting max structure hits
-        let  maxStructureHits = 50000; //Default structure hits
+        let  maxStructureHits = 10000; //Default structure hits
 
         //Try to take the room memory maxStructureHits value
         if(creep.room.memory.maxStructureHits){
@@ -41,7 +41,7 @@ var roleRepairman = {
                     creep.memory.reparingThis = false;
                 }
         	}else{
-                roleUpgrader.run(creep);
+                roleBuilder.run(creep);
         	}
         }
         else {

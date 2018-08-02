@@ -293,11 +293,12 @@ module.exports = {
 
 		switch(stage){
 			case 2:
-				minRepairman = 1;
+				minRepairman += 4;
+				minUpgraders -= 1;
 			case 1:
-				minFarmers = 2;
-				minUpgraders = 1;
-				minHarvesters = 4;
+				minFarmers += 2;
+				minUpgraders += 2;
+				minHarvesters += 4;
 				break;
 		}
 
