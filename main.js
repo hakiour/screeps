@@ -17,7 +17,7 @@ require('prototype.tower');
 
 
 module.exports.loop = function () {
-    const creepsLog = false;
+    const showLog = false;
 
     masterSpawner.clearMemoryOfDeadCreeps();
 
@@ -72,7 +72,7 @@ module.exports.loop = function () {
 		}
 
 		//Room information
-        if (creepsLog){
+        if (showLog){
 	  	console.log("SPAWNER: " + spawnerName);
 	    console.log('Harvesters: ' + harvesters + ' Builders: ' + builders + ' Upgraders: ' + upgraders  + ' Farmers: ' + farmers + ' Repairman: ' + repairman + ' Miners: ' + miners+ ' Transporter: ' + transporters + ' Claimers: ' + claimers);
 	    console.log('ARMY -- ASSAULT: ' + assault + ' HEALERS: ' + healers);

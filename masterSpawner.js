@@ -298,14 +298,12 @@ module.exports = {
 		switch(stage){
 			case 5:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,200000);
-				newSpawnerMemory.minHarvesters += 1;
-				newSpawnerMemory.minUpgraders += 1;
+				newSpawnerMemory.minRepairman += 1;
 			case 4:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,100000);
 			case 3:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,10000);
 				newSpawnerMemory.minBuilders += 1;
-				newSpawnerMemory.minUpgraders += 1;
 			case 2:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,5000);
 				newSpawnerMemory.minRepairman += 1;
