@@ -75,7 +75,7 @@ var roleHarvester = {
                                 return structure.structureType == STRUCTURE_SPAWN;
                             }
                         });
-                        console.log(creep.moveTo(spawner[0]));
+                        creep.moveTo(spawner[0]);
                     }                 
                 }      
             }

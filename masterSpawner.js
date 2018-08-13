@@ -1,3 +1,4 @@
+var genericFunctions = require('genericFunctions');
 module.exports = {
 	/** @param {Spawn} Spawn
         @param {String} role **/
@@ -270,50 +271,88 @@ module.exports = {
         }
     },
 	/** @param {String} Spawn name
-    	@param {int} Stage **/
+    	@param {int} Stage
+    	Console usage: require('masterSpawner').createSpawnMemory(String spawnerName,int Stage); **/
     createSpawnMemory: function(spawnerName, stage = 0){
-    	if(!Game.spawns[spawnerName]){
-			console.log(spawnerName + " doesn't exists");    		
-			return;
+    	let spawner = genericFunctions.getSpawnerByName(spawnerName);
+    	if (!spawner)
+    		return;
+
+    	let newSpawnerMemory = {
+			minUnitAssault : 0,
+			minUnitHealer : 0,
+			minFarmers : 0,
+			minHarvesters : 0,
+			minUpgraders : 0,
+			minRepairman : 0,
+			minClaimers : 0,
+			minBuilders : 0,
+			minTesters : 0,
+			minRemoteWorkers : 0,
+			minMiners : 0,
+			minTransporters : 0,
+			maxStructureHits : 0
     	}
 
-    	let spawner = Game.spawns[spawnerName];
-		let minUnitAssault = 0;
-		let minUnitHealer  = 0;
-		let minFarmers = 0;
-		let minHarvesters = 0;
-		let minUpgraders = 0;
-		let minRepairman = 0;
-		let minClaimers  = 0;
-		let minBuilders = 0;
-		let minTesters = 0;
-		let minRemoteWorkers = 0;
-		let minMiners = 0;
-		let minTransporters = 0;   
-
+    	//Set the memory values based on the actual stage
 		switch(stage){
+			case 5:
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,200000);
+				newSpawnerMemory.minHarvesters += 1;
+				newSpawnerMemory.minUpgraders += 1;
+			case 4:
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,100000);
+			case 3:
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,10000);
+				newSpawnerMemory.minBuilders += 1;
+				newSpawnerMemory.minUpgraders += 1;
 			case 2:
-				minRepairman += 4;
-				minUpgraders -= 1;
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,5000);
+				newSpawnerMemory.minRepairman += 1;
 			case 1:
-				minFarmers += 2;
-				minUpgraders += 2;
-				minHarvesters += 4;
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,1000);
+				newSpawnerMemory.minFarmers += 2;
+				newSpawnerMemory.minUpgraders += 2;
+				newSpawnerMemory.minHarvesters += 4;
 				break;
 		}
 
-		spawner.memory.minUnitAssault = minUnitAssault;
-		spawner.memory.minUnitHealer  = minUnitHealer;
-		spawner.memory.minFarmers = minFarmers;
-	    spawner.memory.minHarvesters = minHarvesters;
-	    spawner.memory.minUpgraders = minUpgraders;
-	    spawner.memory.minRepairman = minRepairman;
-	    spawner.memory.minClaimers  = minClaimers;
-	    spawner.memory.minBuilders = minBuilders;
-	    spawner.memory.minTesters = minTesters;
-	    spawner.memory.minRemoteWorkers = minRemoteWorkers;
-	    spawner.memory.minMiners = minMiners;
-	    spawner.memory.minTransporters = minTransporters;       
+		//Update the memory values to the new ones
+		spawner.memory.minUnitAssault = newSpawnerMemory.minUnitAssault;
+		spawner.memory.minUnitHealer  = newSpawnerMemory.minUnitHealer;
+		spawner.memory.minFarmers = newSpawnerMemory.minFarmers;
+	    spawner.memory.minHarvesters = newSpawnerMemory.minHarvesters;
+	    spawner.memory.minUpgraders = newSpawnerMemory.minUpgraders;
+	    spawner.memory.minRepairman = newSpawnerMemory.minRepairman;
+	    spawner.memory.minClaimers  = newSpawnerMemory.minClaimers;
+	    spawner.memory.minBuilders = newSpawnerMemory.minBuilders;
+	    spawner.memory.minTesters = newSpawnerMemory.minTesters;
+	    spawner.memory.minRemoteWorkers = newSpawnerMemory.minRemoteWorkers;
+	    spawner.memory.minMiners = newSpawnerMemory.minMiners;
+	    spawner.memory.minTransporters = newSpawnerMemory.minTransporters;      
+
+	    //If we set a new maxStructreHits, we assing it to spawner room memory
+	    if (spawner.room.memory && newSpawnerMemory.maxStructureHits > 0)
+	    	spawner.room.memory.maxStructureHits = newSpawnerMemory.maxStructureHits;
+
     	console.log("Setting " + spawnerName + " memory to stage " + stage);
+
+    	function updateMaxStructurehits(maxStructureHits, newMax) {
+    		if (maxStructureHits > newMax)
+    			return maxStructureHits;
+    		else
+    			return newMax;
+    	}
+    },
+    /** @param {String} Spawn name
+    	@param {String} Room name
+    	@param {int} Stage
+    	Console usage: require('masterSpawner').claimRemoteRoom(String spawnerName,String roomName,int Stage); **/
+    claimRemoteRoom: function(spawnerName, roomName, stage = 0){
+    	let spawner = genericFunctions.getSpawnerByName(spawnerName);
+    	if (!spawner)
+    		return;
+    	//Check if we have this roomName in the spawnMemory
+    	
     }
 };

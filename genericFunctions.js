@@ -70,5 +70,14 @@ module.exports = {
             }else{
                  pickUpNearSource(creep);    
             }
+        },
+    getSpawnerByName: function(spawnerName){
+        if(!Game.spawns[spawnerName]){
+            console.log(spawnerName + " doesn't exists");           
+            return false;
         }
+
+        return Game.spawns[spawnerName];
+    }
+
 };

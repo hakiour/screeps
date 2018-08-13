@@ -50,7 +50,8 @@ var roleBuilder = {
             }else{
                 var nearConstruction = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_EXTENSION ||
+                    return (structure.structureType == STRUCTURE_STORAGE ||
+                        structure.structureType == STRUCTURE_EXTENSION ||
                         structure.structureType == STRUCTURE_SPAWN ||
                         structure.structureType == STRUCTURE_TOWER);
                 }
@@ -82,7 +83,7 @@ var roleBuilder = {
         else {
 
             var nearSource = creep.room.storage;
-            if (nearSource){
+            if (nearSource && nearSource.store[RESOURCE_ENERGY] > creep.carryCapacity){
                 if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(creep.room.storage, {visualizePathStyle: {stroke: '#ffffff'}});
                 }
