@@ -13,8 +13,10 @@ var roleClaimer = require('role.claimer');
 var roleTransporter = require('role.transporter');
 var roleTester = require('role.tester');
 var roleRemoteWorker = require('role.remoteWorker');
-require('prototype.tower');
+var roleExplorer = require('role.explorer');
 
+require('prototype.tower');
+require('prototype.rooms');
 
 module.exports.loop = function () {
     const showLog = false;
@@ -32,7 +34,6 @@ module.exports.loop = function () {
 	    var upgraders = countByRole['upgrader'] || 0;
 	    var farmers = countByRole['farmer'] || 0;
 	    var repairman = countByRole['repairman'] || 0;
-
 	    //Generic rols, all rooms share this units
 	    var miners = globalCountByRole['miner'] || 0;
 	    var assault = globalCountByRole['unit_assault'] || 0;
@@ -41,7 +42,12 @@ module.exports.loop = function () {
 	    var transporters = globalCountByRole['transporter'] || 0;
 	    var testers = globalCountByRole['tester'] || 0;
 	    var remoteWorkers = globalCountByRole['remoteWorker'] || 0;
-		
+	    var maxRemoteRooms = spawner.memory.maxRemoteRooms || 0;
+	    var actualRemoteRooms = 0;
+
+	    if (Memory.rooms[spawner.room.name].remote)
+			actualRemoteRooms = Object.keys(Memory.rooms[spawner.room.name].remote).length;
+
 		if (!spawner.spawning){
 		    //If the total of creeps is less than the minimum, spawn a new creep with the suitable rol&parts
 		    if(assault < spawner.memory.minUnitAssault){
@@ -68,7 +74,13 @@ module.exports.loop = function () {
 		        masterSpawner.createNewCreep(spawner, "miner");
 		    }else if(transporters < spawner.memory.minTransporters){
 		        masterSpawner.createNewCreep(spawner, "transporter");
+		    }else if(actualRemoteRooms < maxRemoteRooms){
+		    	let explorers = _.countBy(Game.creeps, 'memory.role').explorer || 0
+		    	if ((explorers + actualRemoteRooms) < maxRemoteRooms){
+		    		 masterSpawner.createNewCreep(spawner, "explorer");
+		    	}
 		    }
+
 		}
 
 		//Room information
@@ -138,6 +150,9 @@ module.exports.loop = function () {
                 break;
             case 'remoteWorker':
             	roleRemoteWorker.run(creep);
+            	break;
+            case 'explorer':
+            	roleExplorer.run(creep);
             	break;
 	        }
 	    }

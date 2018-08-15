@@ -29,19 +29,17 @@ module.exports = {
         return false;     
 	},
 
-    pickUpNearEnergyFromStorage: function(creep) {
-          var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
-                }
-            });
-            if(targets.length > 0) {
+    pickUpNearEnergy: function(creep) {
+        var nearSource = creep.room.storage;
+        if (nearSource) {
+            if( nearSource.store[RESOURCE_ENERGY] > creep.carryCapacity){
                 if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.storage);
+                    creep.moveTo(creep.room.storage);
                 }
             }
+        }else{
+            pickUpNearSource(creep);
+        }
     },
     getNearestSafeZone: function(creep){
         for(var thisFlag in Game.flags) {       
@@ -79,11 +77,18 @@ module.exports = {
         },
     getSpawnerByName: function(spawnerName){
         if(!Game.spawns[spawnerName]){
-            console.log(spawnerName + " doesn't exists");           
+            console.log("Spawn " + spawnerName + " doesn't exists");           
             return false;
         }
 
         return Game.spawns[spawnerName];
+    },
+    getRoomByName: function(roomName){
+        if(!Game.rooms[roomName]){
+            console.log("Room " + roomName + " doesn't exists");           
+            return false;
+        }
+        return Game.rooms[roomName];
     }
 
 };

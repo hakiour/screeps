@@ -1,4 +1,4 @@
-//Craete new functions for StructureTower
+//New functions for StructureTower
 StructureTower.prototype.attackNearEnemys =
     function () {
         // find closes hostile creep

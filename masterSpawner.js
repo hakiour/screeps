@@ -40,13 +40,13 @@ module.exports = {
 				numberOfParts[2][1] = 50; //CARRY
                 break;
             case 'upgrader':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,1000);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,800);
  				numberOfParts[1][1] = 70; //WORK
 				numberOfParts[2][1] = 15; //CARRY
 				numberOfParts[4][1] = 15; //MOVE
                 break;
             case 'builder':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,850);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,650);
  				numberOfParts[1][1] = 50; //WORK
 				numberOfParts[2][1] = 20; //CARRY
 				numberOfParts[4][1] = 30; //MOVE
@@ -58,7 +58,7 @@ module.exports = {
  				numberOfParts[4][1] = 0.1; //MOVE
                 break;
             case 'repairman':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,1150);
+            	energyAvaiable = getEnergyLimit(energyAvaiable,1050);
                 numberOfParts[1][1] = 50; //WORK
                 numberOfParts[2][1] = 35; //CARRY
  				numberOfParts[4][1] = 15; //MOVE
@@ -105,6 +105,11 @@ module.exports = {
            		numberOfParts[2][1] = 36; //CARRY
   				numberOfParts[4][1] = 36; //MOVE
             	break;
+        	case 'explorer':
+        		minimumParts = 1;
+				energyAvaiable = getEnergyLimit(energyAvaiable,50);
+				numberOfParts[4][1] = 100; //MOVE
+        		break;
 	    }
 
 	    parts = getNumberOfParts(numberOfParts);
@@ -184,6 +189,45 @@ module.exports = {
 					return;
 				}
 				break;
+			case "explorer":
+				let roomName = spawner.room.name;
+				let targetRoom = "";
+				//Find a room target
+				let remoteRooms = 0;
+				if (Memory.rooms[roomName] && Memory.rooms[roomName].remote)
+					remoteRooms = Object.keys(Memory.rooms[roomName].remote).length;
+
+				//If it is the first remote room, we set by default the right adjacent room as the target
+				if (remoteRooms == 0)
+					targetRoom = roomName.substring(0,1) + (Number(roomName.substring(1,3)) - 1).toString() + roomName.substring(3,roomName.length);
+				else{
+					let alreadyClaimedRooms = Object.keys(Memory.rooms[roomName].remote);
+					//Get the free room
+					/*
+					//--DOWN room
+					targetRoom = roomName.substring(0,roomName.length - 2) + (Number(roomName.substring(roomName.length -2)) + 1).toString();
+					*/
+					//LEFT room
+					targetRoom = roomName.substring(0,1) + (Number(roomName.substring(1,3)) + 1).toString() + roomName.substring(3,roomName.length);
+					if (alreadyClaimedRooms.indexOf(targetRoom) == -1){
+						break;
+					}else{
+						//UP room
+						targetRoom = roomName.substring(0,roomName.length - 2) + (Number(roomName.substring(roomName.length -2)) - 1).toString();
+						if (alreadyClaimedRooms.indexOf(targetRoom) == -1)
+							break;
+						else
+							targetRoom = false;
+					}
+				}
+				if (targetRoom)
+					target = targetRoom;
+				else{
+					console.log("CAN'T FIND A REMOTE ROOM FOR EXPLORERS");
+					return;
+				}
+				break;
+
 		}
 
 
@@ -194,6 +238,7 @@ module.exports = {
 				working: false,
 				onFlag: false,
 				roomRoot: spawner.room.name,
+				queen: spawner.name,
 				target: target,
 				energySource: energySource
 			}
@@ -270,7 +315,7 @@ module.exports = {
             }
         }
     },
-	/** @param {String} Spawn name
+	/** @param {String} StructureSpawn name
     	@param {int} Stage
     	Console usage: require('masterSpawner').createSpawnMemory(String spawnerName,int Stage); **/
     createSpawnMemory: function(spawnerName, stage = 0){
@@ -291,14 +336,17 @@ module.exports = {
 			minRemoteWorkers : 0,
 			minMiners : 0,
 			minTransporters : 0,
-			maxStructureHits : 0
+			maxStructureHits : 0,
+			maxRemoteRooms : 0
     	}
 
     	//Set the memory values based on the actual stage
 		switch(stage){
-			case 5:
+			case 6:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,200000);
-				newSpawnerMemory.minRepairman += 1;
+				newSpawnerMemory.maxRemoteRooms = 1;
+			case 5:
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,150000);
 			case 4:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,100000);
 			case 3:
@@ -328,10 +376,12 @@ module.exports = {
 	    spawner.memory.minRemoteWorkers = newSpawnerMemory.minRemoteWorkers;
 	    spawner.memory.minMiners = newSpawnerMemory.minMiners;
 	    spawner.memory.minTransporters = newSpawnerMemory.minTransporters;      
+	    spawner.memory.maxRemoteRooms = newSpawnerMemory.maxRemoteRooms;
 
 	    //If we set a new maxStructreHits, we assing it to spawner room memory
 	    if (spawner.room.memory && newSpawnerMemory.maxStructureHits > 0)
 	    	spawner.room.memory.maxStructureHits = newSpawnerMemory.maxStructureHits;
+	    
 
     	console.log("Setting " + spawnerName + " memory to stage " + stage);
 
@@ -342,7 +392,7 @@ module.exports = {
     			return newMax;
     	}
     },
-    /** @param {String} Spawn name
+    /** @param {String} StructureSpawn name
     	@param {String} Room name
     	@param {int} Stage
     	Console usage: require('masterSpawner').claimRemoteRoom(String spawnerName,String roomName,int Stage); **/

@@ -20,15 +20,7 @@ var roleUpgrader = {
             }
         }
         else {
-           	var nearSource = creep.room.storage;
-            if (nearSource && nearSource.store[RESOURCE_ENERGY] > creep.carryCapacity){
-                if(creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(creep.room.storage, {visualizePathStyle: {stroke: '#ffffff'}});
-                }
-            }else{
-                genericFunctions.pickUpNearSource(creep);
-            } 
-            
+            genericFunctions.pickUpNearEnergy(creep);   
         }
     }
 };
