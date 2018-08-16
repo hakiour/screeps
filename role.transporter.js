@@ -8,7 +8,7 @@ var roleTransporter = {
         if(creep.carry.energy < creep.carryCapacity){
             //Collect energy in the targer room
            if(creep.memory.target == creep.room.name){
-                genericFunctions.pickUpNearSource(creep);
+                genericFunctions.pickUpNearSource(creep,1);
             }else{
                 //Move to the target room
                 let exitToTarget = creep.room.findExitTo(creep.memory.target);

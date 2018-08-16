@@ -28,7 +28,7 @@ Room.prototype.adquireRemoteRoom =
 			}
 			if (!spawner.room.memory.remote){
 				spawner.room.memory.remote = {};
-
+				}
 				//Creating the energies JSON
 				let energiesID = Room.prototype.getEnergiesID(roomName);
 				let energies = {};
@@ -72,7 +72,7 @@ Room.prototype.adquireRemoteRoom =
 					"energies": energies
 				};
 				console.log("·");
-			}
+			
 		}
 
 };

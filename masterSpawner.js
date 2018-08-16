@@ -207,17 +207,14 @@ module.exports = {
 					//--DOWN room
 					targetRoom = roomName.substring(0,roomName.length - 2) + (Number(roomName.substring(roomName.length -2)) + 1).toString();
 					*/
-					//LEFT room
-					targetRoom = roomName.substring(0,1) + (Number(roomName.substring(1,3)) + 1).toString() + roomName.substring(3,roomName.length);
-					if (alreadyClaimedRooms.indexOf(targetRoom) == -1){
-						break;
-					}else{
-						//UP room
-						targetRoom = roomName.substring(0,roomName.length - 2) + (Number(roomName.substring(roomName.length -2)) - 1).toString();
-						if (alreadyClaimedRooms.indexOf(targetRoom) == -1)
-							break;
-						else
+					//UP room
+					targetRoom = roomName.substring(0,roomName.length - 2) + (Number(roomName.substring(roomName.length -2)) - 1).toString();
+					if (!(alreadyClaimedRooms.indexOf(targetRoom) == -1)){
+						//LEFT room
+						targetRoom = roomName.substring(0,1) + (Number(roomName.substring(1,3)) + 1).toString() + roomName.substring(3,roomName.length);
+						if (!(alreadyClaimedRooms.indexOf(targetRoom) == -1)){
 							targetRoom = false;
+						}
 					}
 				}
 				if (targetRoom)
@@ -303,7 +300,8 @@ module.exports = {
                    		break;
                     case "miner":
 	                    //On miners, free the energy
-	                    Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].mining = false;
+	                    if ( Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target] &&  Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies && Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].mining)
+	                   		Memory.rooms[creepMemory.roomRoot].remote[creepMemory.target].energies[creepMemory.energySource].mining = false;
 	                    break;
 	                case "transporter":
 	                    //minus this transporter form the total of their energySource
@@ -342,9 +340,12 @@ module.exports = {
 
     	//Set the memory values based on the actual stage
 		switch(stage){
+			case 7:
+				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,500000);
+				newSpawnerMemory.maxRemoteRooms += 1;
 			case 6:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,200000);
-				newSpawnerMemory.maxRemoteRooms = 1;
+				newSpawnerMemory.maxRemoteRooms += 1;
 			case 5:
 				newSpawnerMemory.maxStructureHits = updateMaxStructurehits(newSpawnerMemory.maxStructureHits,150000);
 			case 4:

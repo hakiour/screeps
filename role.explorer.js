@@ -9,6 +9,7 @@ var roleExplorer = {
                 Game.spawns[creep.memory.queen].memory.minClaimers +=1;
                 Game.spawns[creep.memory.queen].memory.minMiners +=1;
                 Game.spawns[creep.memory.queen].memory.minTransporters +=3;
+                console.log(creep.memory.target + " adquired to " + creep.memory.queen );
                 creep.suicide();
             }
         }else{
