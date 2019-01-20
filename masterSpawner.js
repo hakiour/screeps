@@ -9,14 +9,13 @@ module.exports = {
 		let energySource = undefined;
 		let memoryRemoteRooms;
 		//Get the energy avaiable from near extensions that have energy
-		let energyAvaiable = spawner.room.find(FIND_STRUCTURES, {
-			filter: (structure) => (structure.structureType == STRUCTURE_EXTENSION && structure.energy == structure.energyCapacity)
-		}).length * 50;
+		let energyAvailable  = spawner.room.energyAvailable;
 
 		//add the energy of Spawner and substract the backup part (200 energy)
-		energyAvaiable += spawner.energy - 100;
-		console.log(spawner.name + " has " + energyAvaiable + " energy on his room");
-		if (energyAvaiable <= 0)	{
+		energyAvailable  += spawner.energy - 100;
+		
+		console.log(spawner.name + " has " + energyAvailable  + " energy on his room");
+		if (energyAvailable  <= 0)	{
 			return;
 		}
 
@@ -33,81 +32,81 @@ module.exports = {
 
 		switch(role) {
             case 'harvester':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,700);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,700);
             	minimumParts = 2;
  				//We set up the % of energy that we want to spend on each part
             	numberOfParts[4][1] = 50; //MOVE
 				numberOfParts[2][1] = 50; //CARRY
                 break;
             case 'upgrader':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,800);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,800);
  				numberOfParts[1][1] = 70; //WORK
 				numberOfParts[2][1] = 15; //CARRY
 				numberOfParts[4][1] = 15; //MOVE
                 break;
             case 'builder':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,650);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,650);
  				numberOfParts[1][1] = 50; //WORK
 				numberOfParts[2][1] = 20; //CARRY
 				numberOfParts[4][1] = 30; //MOVE
                 break;
             case 'farmer':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,500);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,500);
             	minimumParts = 2;
             	numberOfParts[1][1] = 100; //WORK
  				numberOfParts[4][1] = 0.1; //MOVE
                 break;
             case 'repairman':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,1050);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,1050);
                 numberOfParts[1][1] = 50; //WORK
                 numberOfParts[2][1] = 35; //CARRY
  				numberOfParts[4][1] = 15; //MOVE
                 break;
             case 'miner':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,700);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,700);
             	minimumParts = 6;
  				numberOfParts[1][1] = 75; //WORK
  				numberOfParts[4][1] = 25; //MOVE
                 break;
             case 'transporter':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,700);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,700);
            		numberOfParts[1][1] = 0.1; //WORK
            		numberOfParts[2][1] = 50; //CARRY
   				numberOfParts[4][1] = 50; //MOVE
                 break;
             case 'claimer':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,650);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,650);
  				numberOfParts[3][1] = 92; //CLAIM
 				numberOfParts[4][1] = 8; //MOVE
 
                 break;
             case 'unit_assault':
-            	energyAvaiable = getEnergyLimit(energyAvaiable,1450);
+            	energyAvailable  = getEnergyLimit(energyAvailable ,1450);
  				numberOfParts[0][1] = 5.2; //TOUGH
   				numberOfParts[4][1] = 52; //MOVE
   				numberOfParts[5][1] = 42; //ATTACK
                 break;
             case 'unit_healer':
-             	energyAvaiable = getEnergyLimit(energyAvaiable,1700);
+             	energyAvailable  = getEnergyLimit(energyAvailable ,1700);
  				numberOfParts[0][1] = 2; //TOUGH
  				numberOfParts[4][1] = 41; //MOVE
   				numberOfParts[6][1] = 56; //HEAL
                 break;
             case 'tester':
-                energyAvaiable = getEnergyLimit(energyAvaiable,350);
+                energyAvailable  = getEnergyLimit(energyAvailable ,350);
            		numberOfParts[1][1] = 28; //WORK
            		numberOfParts[2][1] = 36; //CARRY
   				numberOfParts[4][1] = 36; //MOVE
                 break;
             case 'remoteWorker':
- 				energyAvaiable = getEnergyLimit(energyAvaiable,650);
+ 				energyAvailable  = getEnergyLimit(energyAvailable ,650);
            		numberOfParts[1][1] = 28; //WORK
            		numberOfParts[2][1] = 36; //CARRY
   				numberOfParts[4][1] = 36; //MOVE
             	break;
         	case 'explorer':
         		minimumParts = 1;
-				energyAvaiable = getEnergyLimit(energyAvaiable,50);
+				energyAvailable  = getEnergyLimit(energyAvailable ,50);
 				numberOfParts[4][1] = 100; //MOVE
         		break;
 	    }
@@ -265,7 +264,7 @@ module.exports = {
 					numberOfParts.splice(i,1);
 					continue;
 				}
-				numberOfParts[i][2] = ~~((energyAvaiable*numberOfParts[i][1]/100)/numberOfParts[i][3]);
+				numberOfParts[i][2] = ~~((energyAvailable *numberOfParts[i][1]/100)/numberOfParts[i][3]);
 				if (numberOfParts[i][2] == 0){ //Minimum one item of each part, we have a backup storage that can afford this
 					numberOfParts[i][2] = 1;
 				}
